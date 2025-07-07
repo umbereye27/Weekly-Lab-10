@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,18 +14,22 @@ interface Task {
   completed: boolean;
 }
 
-export default function TasksPage({ params }: { params: { skill: string } }) {
+export default function TasksPage({
+  params,
+}: {
+  params: Promise<{ skill: string }>;
+}) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-
+  const { skill: skillId } = use(params);
   useEffect(() => {
     fetchTasks();
-  }, [params.skill]);
+  }, [skillId]);
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`/api/skills/${params.skill}`);
+      const response = await fetch(`/api/skills/${skillId}`);
       if (response.ok) {
         const data = await response.json();
         setTasks(data.tasks);
@@ -153,7 +157,7 @@ export default function TasksPage({ params }: { params: { skill: string } }) {
       <CreateTaskDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
-        skillId={params.skill}
+        skillId={skillId}
         onTaskCreated={handleTaskCreated}
       />
     </div>

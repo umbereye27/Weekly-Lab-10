@@ -6,9 +6,9 @@ import { getUserFromToken } from "@/lib/jwt";
 // GET a single reflection by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const reflectionId = params.id;
+  const reflectionId = (await params).id;
 
   try {
     const user = getUserFromToken(request);
@@ -54,9 +54,9 @@ export async function GET(
 // UPDATE a reflection by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const reflectionId = params.id;
+  const reflectionId = (await params).id;
 
   try {
     const user = getUserFromToken(request);
@@ -136,9 +136,9 @@ export async function PUT(
 // DELETE a reflection by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const reflectionId = params.id;
+  const reflectionId = (await params).id;
 
   try {
     const user = getUserFromToken(request);

@@ -6,9 +6,9 @@ import { getUserFromToken } from "@/lib/jwt";
 // GET a single task by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const taskId = params.id;
+  const taskId = (await params).id;
 
   try {
     const user = getUserFromToken(request);
@@ -53,9 +53,9 @@ export async function GET(
 // UPDATE a task by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const taskId = params.id;
+  const taskId = (await params).id;
 
   try {
     const user = getUserFromToken(request);
@@ -136,9 +136,9 @@ export async function PUT(
 // DELETE a task by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const taskId = params.id;
+  const taskId = (await params).id;
 
   try {
     const user = getUserFromToken(request);

@@ -310,6 +310,7 @@ export default function DashboardPage() {
                   <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center mx-auto mb-4">
                     <Plus className="h-6 w-6 text-slate-400" />
                   </div>
+
                   <h3 className="text-white font-medium mb-1">Add New Skill</h3>
                   <p className="text-slate-400 text-sm">
                     Start tracking a new learning goal
