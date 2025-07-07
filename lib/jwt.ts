@@ -14,9 +14,12 @@ export function extractTokenFromHeader(request: NextRequest): string | null {
 
   // Log all headers for debugging
   const headers = Object.fromEntries(request.headers.entries());
-  console.log("All headers:", JSON.stringify(headers, null, 2));
+  // console.log("All headers:", JSON.stringify(headers, null, 2));
 
   const authHeader = request.headers.get("authorization");
+  // console.log("Cookie header:", request.headers.get("cookie"));
+  const newToken = request.cookies.get("token")?.value;
+  console.log("New token: ", newToken);
   console.log("Authorization header:", authHeader);
 
   if (!authHeader) {
@@ -30,52 +33,42 @@ export function extractTokenFromHeader(request: NextRequest): string | null {
   }
 
   const token = authHeader.substring(7).trim();
-  console.log(
-    "Extracted token (first 10 chars):",
-    token.substring(0, 10) + "..."
-  );
+  // console.log(
+  //   "Extracted token (first 10 chars):",
+  //   token.substring(0, 10) + "..."
+  // );
   return token;
 }
 
 export function generateToken(payload: any) {
-  const secret = Buffer.from(process.env.NEXTAUTH_SECRET!, "base64");
-  return jwt.sign(payload, secret, { expiresIn: "7d" });
+  try {
+    // Remove quotes if they exist in the secret (from .env file)
+    const rawSecret = process.env.NEXTAUTH_SECRET || "";
+    const secret = rawSecret.replace(/"/g, "").trim();
+
+    console.log("Generating token with payload:", {
+      ...payload,
+      password: "[REDACTED]",
+    });
+    console.log("Secret first 5 chars:", secret.substring(0, 5) + "...");
+
+    return jwt.sign(payload, secret, { expiresIn: "7d" });
+  } catch (error) {
+    console.error("Error generating token:", error);
+    throw error;
+  }
 }
 
 export function verifyToken(token: string) {
   try {
-    // Check if secret is available
-    if (!process.env.NEXTAUTH_SECRET) {
-      console.error("CRITICAL ERROR: NEXTAUTH_SECRET is not defined");
-      // In development, use a default secret to prevent crashes
-      if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "Using default secret for development - DO NOT USE IN PRODUCTION"
-        );
-        const devSecret = "development_secret_key_do_not_use_in_production";
-        const decoded = jwt.verify(token, devSecret) as JWTPayload;
-        return decoded;
-      }
-      throw new Error("Server configuration error: Missing NEXTAUTH_SECRET");
-    }
+    // Remove quotes if they exist in the secret (from .env file)
+    const rawSecret = process.env.NEXTAUTH_SECRET || "";
+    const secret = rawSecret.replace(/"/g, "").trim();
 
-    // Properly handle secret
-    let secret;
-    try {
-      // Try to use as base64
-      secret = Buffer.from(process.env.NEXTAUTH_SECRET, "base64");
-    } catch (e) {
-      // Fallback to using raw string
-      console.warn(
-        "Failed to decode NEXTAUTH_SECRET as base64, using as raw string"
-      );
-      secret = process.env.NEXTAUTH_SECRET;
-    }
+    console.log("Verifying token (first 10):", token.substring(0, 10) + "...");
+    console.log("Secret first 5 chars:", secret.substring(0, 5) + "...");
 
-    // Verify token
-    console.log("Attempting to verify token...");
     const decoded = jwt.verify(token, secret) as JWTPayload;
-    console.log("Token verified successfully, user:", decoded.email);
     return decoded;
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
@@ -91,17 +84,38 @@ export function verifyToken(token: string) {
 
 export function getUserFromToken(request: NextRequest): JWTPayload | null {
   try {
-    const token = extractTokenFromHeader(request);
+    // Try to get the token from headers or cookies
+    const token =
+      extractTokenFromHeader(request) ||
+      request.cookies.get("token")?.value?.trim();
+
+    // Development bypass if enabled
+    if (
+      process.env.BYPASS_AUTH === "true" &&
+      process.env.NODE_ENV === "development"
+    ) {
+      console.log("⚠️ Auth bypass enabled - using mock user");
+      return {
+        id: "mock-user-id",
+        email: "dev@example.com",
+        name: "Development User",
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days
+      };
+    }
+
     if (!token) {
-      console.error("No token found in authorization header");
+      console.error("No token found in request");
       return null;
     }
 
-    console.log(
-      "Token received (first 10 chars):",
-      token.substring(0, 10) + "..."
-    );
-    return verifyToken(token);
+    try {
+      const verifiedToken = verifyToken(token);
+      return verifiedToken;
+    } catch (tokenError) {
+      console.error("Token verification failed:", tokenError);
+      return null;
+    }
   } catch (error) {
     console.error("Error in getUserFromToken:", error);
     return null;

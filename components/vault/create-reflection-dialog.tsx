@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { fetchWithAuth } from "@/utils/api";
 
 interface CreateReflectionDialogProps {
   open: boolean;
@@ -35,7 +36,7 @@ export function CreateReflectionDialog({
     setError("");
 
     try {
-      const response = await fetch("/api/reflections", {
+      const response = await fetchWithAuth("/api/reflections", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,13 +44,8 @@ export function CreateReflectionDialog({
         body: JSON.stringify({ content, skillId }),
       });
 
-      if (response.ok) {
-        const newReflection = await response.json();
-        onReflectionCreated(newReflection);
-        setContent("");
-      } else {
-        setError("Failed to create reflection");
-      }
+      onReflectionCreated(response);
+      setContent("");
     } catch (error) {
       setError("Something went wrong");
     } finally {

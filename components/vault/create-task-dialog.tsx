@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { fetchWithAuth } from "@/utils/api";
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import {
   Dialog,
@@ -37,7 +38,7 @@ export function CreateTaskDialog({
     setError("");
 
     try {
-      const response = await fetch("/api/tasks", {
+      const response = await fetchWithAuth("/api/tasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,14 +46,9 @@ export function CreateTaskDialog({
         body: JSON.stringify({ title, description, skillId }),
       });
 
-      if (response.ok) {
-        const newTask = await response.json();
-        onTaskCreated(newTask);
-        setTitle("");
-        setDescription("");
-      } else {
-        setError("Failed to create task");
-      }
+      onTaskCreated(response);
+      setTitle("");
+      setDescription("");
     } catch (error) {
       setError("Something went wrong");
     } finally {
@@ -69,7 +65,6 @@ export function CreateTaskDialog({
             Create a specific task to work on for this skill
           </DialogDescription>
         </DialogHeader>
-
         <Form onSubmit={handleSubmit}>
           <FormField>
             <FormLabel htmlFor="title">Title</FormLabel>

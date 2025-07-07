@@ -12,7 +12,7 @@ function logRequestDetails(request: NextRequest) {
 export function middleware(request: NextRequest) {
   // Debug logging
   console.log("\n--- Middleware Executed ---");
-  logRequestDetails(request);
+  // logRequestDetails(request);
 
   // DEVELOPMENT BYPASS - REMOVE IN PRODUCTION
   // Allow all requests in development to troubleshoot other issues
@@ -35,6 +35,19 @@ export function middleware(request: NextRequest) {
     "/api/auth/signup",
   ];
 
+  // Debug paths (allowed in development)
+  const debugPaths = ["/api/debug/", "/debug/"];
+
+  // Allow debug paths in development mode
+  const isDebugPath =
+    process.env.NODE_ENV === "development" &&
+    debugPaths.some((path) => request.nextUrl.pathname.startsWith(path));
+
+  if (isDebugPath) {
+    console.log("Debug path accessed:", request.nextUrl.pathname);
+    return NextResponse.next();
+  }
+
   // Check if the path is in the public paths
   const isPublicPath = publicPaths.some(
     (path) =>
@@ -48,11 +61,14 @@ export function middleware(request: NextRequest) {
 
   // Get token from the authorization header (which will be set by the client)
   const authHeader = request.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.substring(7)
-    : null;
+
+  // const token = authHeader?.startsWith("Bearer ")
+  //   ? authHeader.substring(7)
+  //   : null;
+  const token = request.cookies.get("token")?.value;
 
   if (token) {
+    console.log("Token found in cookie: ", token);
     console.log(
       "Token from header (first 10 chars):",
       token.substring(0, 10) + "..."

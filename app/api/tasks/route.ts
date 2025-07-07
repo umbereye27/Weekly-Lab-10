@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = getUserFromToken(request);
-
+    console.log("User found in the api: ", user);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -57,10 +57,9 @@ export async function POST(request: NextRequest) {
     const skill = await prisma.skill.findFirst({
       where: {
         id: skillId,
-        userId: user.id,
       },
     });
-
+    console.log("Found skill: ", skill);
     if (!skill) {
       return NextResponse.json(
         { error: "Skill not found or unauthorized" },

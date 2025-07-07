@@ -17,7 +17,7 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   useEffect(() => {
     const checkAuth = () => {
       const authenticated = isAuthenticated();
-      console.log("authenticated", authenticated);
+      // console.log("authenticated", authenticated);
       setIsAuth(authenticated);
       setIsLoading(false);
 

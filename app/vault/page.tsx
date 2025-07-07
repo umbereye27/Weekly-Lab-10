@@ -79,6 +79,31 @@ export default function DashboardPage() {
     }
   };
 
+  // Add skills function
+  // const addSkills = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetchWithAuth("/api/skills", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(skills),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Skill added successfully:", data);
+  //   } catch (error) {
+  //     console.error("Error adding skill:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchRecentTasks = async () => {
     try {
       const data = await fetchWithAuth("/api/tasks");

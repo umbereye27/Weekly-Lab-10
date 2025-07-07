@@ -41,14 +41,9 @@ export function CreateSkillDialog({
         body: JSON.stringify({ title, description }),
       });
 
-      if (response.ok) {
-        const newSkill = await response.json();
-        onSkillCreated(newSkill);
-        setTitle("");
-        setDescription("");
-      } else {
-        setError("Failed to create skill");
-      }
+      onSkillCreated(response);
+      setTitle("");
+      setDescription("");
     } catch (error) {
       setError("Something went wrong");
     } finally {
