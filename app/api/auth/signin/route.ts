@@ -24,11 +24,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user by email
+
     const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, name: true, email: true, password: true },
     });
-
+    console.log("User found:", user);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
@@ -54,11 +55,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate JWT
-    const token = generateToken({
+    console.log("Generating token for user:", user.email);
+
+    const payload = {
       id: user.id,
       email: user.email,
-      name: user.name,
-    });
+      name: user.name || "User",
+    };
+
+    const token = generateToken(payload);
+
+    console.log(
+      "Token generated successfully (first 10 chars):",
+      token.substring(0, 10) + "..."
+    );
 
     return NextResponse.json(
       {

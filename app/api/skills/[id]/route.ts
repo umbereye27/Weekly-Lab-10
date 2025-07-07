@@ -7,6 +7,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const skillId = await params.id;
+
   try {
     const user = getUserFromToken(request);
 
@@ -15,7 +17,7 @@ export async function GET(
     }
 
     const skill = await prisma.skill.findFirst({
-      where: { id: params.id, userId: user.id },
+      where: { id: skillId },
       include: {
         tasks: { orderBy: { createdAt: "asc" } },
         reflections: { orderBy: { createdAt: "desc" } },
@@ -26,11 +28,18 @@ export async function GET(
       return NextResponse.json({ error: "Skill not found" }, { status: 404 });
     }
 
-    return NextResponse.json(skill);
+    return NextResponse.json({
+      message: "Skill retrieved successfully",
+      skill,
+    });
   } catch (error) {
     console.error("Get skill error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: "Failed to retrieve skill",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -40,6 +49,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const skillId = params.id;
+
   try {
     const user = getUserFromToken(request);
 
@@ -52,7 +63,7 @@ export async function PUT(
 
     const skill = await prisma.skill.updateMany({
       where: {
-        id: params.id,
+        id: skillId,
         userId: user.id,
       },
       data: {
@@ -66,18 +77,25 @@ export async function PUT(
     }
 
     const updatedSkill = await prisma.skill.findUnique({
-      where: { id: params.id },
+      where: { id: skillId },
       include: {
         tasks: true,
         reflections: true,
       },
     });
 
-    return NextResponse.json(updatedSkill);
+    return NextResponse.json({
+      message: "Skill updated successfully",
+      skill: updatedSkill,
+    });
   } catch (error) {
     console.error("Update skill error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: "Failed to update skill",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -87,6 +105,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const skillId = params.id;
+
   try {
     const user = getUserFromToken(request);
 
@@ -96,7 +116,7 @@ export async function DELETE(
 
     const result = await prisma.skill.deleteMany({
       where: {
-        id: params.id,
+        id: skillId,
         userId: user.id,
       },
     });
@@ -105,11 +125,19 @@ export async function DELETE(
       return NextResponse.json({ error: "Skill not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ message: "Skill deleted successfully" });
+    return NextResponse.json({
+      message: "Skill deleted successfully",
+      skillId: skillId,
+      status: "deleted",
+    });
   } catch (error) {
     console.error("Delete skill error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: "Failed to delete skill",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

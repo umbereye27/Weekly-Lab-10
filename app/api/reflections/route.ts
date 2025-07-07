@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { content, skillId } = reflectionSchema.parse(body);
 
-    // Verify skill belongs to user
     const skill = await prisma.skill.findFirst({
       where: {
         id: skillId,

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/auth-provider";
+import { ClientAuthCheck } from "@/components/client-auth-check";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +26,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Suppress hydration warnings from Grammarly extension */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              const originalConsoleError = console.error;
+              console.error = function(msg) {
+                if (typeof msg === 'string' && 
+                    (msg.includes('data-new-gr-c-s-check-loaded') || 
+                     msg.includes('data-gr-ext-installed'))) {
+                  return;
+                }
+                originalConsoleError.apply(console, arguments);
+              };
+            })();
+          `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning={true}
       >
-        {children}
+        <AuthProvider>
+          <ClientAuthCheck />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
